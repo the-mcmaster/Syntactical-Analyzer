@@ -6,7 +6,7 @@ pub enum Token {
     Identifier,
     Symbol(Symbol),
     Type(Type),
-    Return
+    Return,
 }
 impl From<Symbol> for Token {
     fn from(sym: Symbol) -> Self {
@@ -51,16 +51,15 @@ pub enum Symbol {
 pub enum CharClass {
     /// [a-zA-Z]
     Letter,
-    
+
     /// [0-9]
     Digit,
-    
+
     /// [+-*/=;(){}_,.]
     Symbol(Symbol),
 
-    
     /// An unexpected character was parsed...
-    Unknown
+    Unknown,
 }
 impl CharClass {
     /// Parses a byte, expecting a 7-bit ascii code.
@@ -70,19 +69,13 @@ impl CharClass {
             return Self::Unknown;
         }
 
-
         match c as char {
-            'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' |
-            'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' |
-            'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' |
-            'v' | 'w' | 'x' | 'y' | 'z' |
-            'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' |
-            'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' |
-            'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' |
-            'V' | 'W' | 'X' | 'Y' | 'Z' => Self::Letter,
-            
-            '0' | '1' | '2' | '3' | '4' |
-            '5' | '6' | '7' | '8' | '9' => Self::Digit,
+            'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n'
+            | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | 'A' | 'B'
+            | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P'
+            | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' => Self::Letter,
+
+            '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => Self::Digit,
 
             '+' => Symbol::Plus.into(),
             '-' => Symbol::Minus.into(),
@@ -98,12 +91,12 @@ impl CharClass {
             '}' => Symbol::RightCurly.into(),
 
             '_' => Symbol::Underscore.into(),
-            
+
             ',' => Symbol::Comma.into(),
 
             '.' => Symbol::Period.into(),
 
-            _ => Self::Unknown
+            _ => Self::Unknown,
         }
     }
 }
