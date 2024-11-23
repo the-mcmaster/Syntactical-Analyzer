@@ -1,7 +1,14 @@
-use std::env::args;
+use std::{
+    env::args,
+    fs::File,
+    io::{Bytes, Read},
+    sync::LazyLock,
+};
 
-/// Parse the provided arguments for an input file path.
-pub fn parse_args() -> String {
+/// The input path passed-in from the CLI arguments, which is always expected.
+///
+/// This is purposely left private to compartmentalize the IO module.
+static INPUT_PATH: LazyLock<String> = LazyLock::new(|| {
     // read program's argument, expecting only '-i' anywhere
     let found_argument = args()
         .enumerate()
@@ -26,12 +33,38 @@ pub fn parse_args() -> String {
     let input_file_path = found_path.unwrap();
 
     return input_file_path;
+});
+
+/// Returns an interator over the bytes of a file.
+///
+/// The program will exit with an error message if the file cannot be opened.
+pub fn open_file() -> Bytes<File> {
+    match File::open(INPUT_PATH.as_str()) {
+        Ok(file) => file.bytes(),
+
+        Err(err) => {
+            eprintln!(
+                "ERROR - could not open file `{}` due to IO error - `{}`",
+                INPUT_PATH.as_str(),
+                err
+            );
+            std::process::exit(2)
+        }
+    }
 }
 
-pub fn expected_read(maybe_c: Result<u8, std::io::Error>, input_path: &str) -> u8 {
+/// Helper unwrapping function for an IO read of a byte.
+///
+/// If the input is `None`, the program exits with an error message.
+/// Otherwise, the input is `Some(_)` and we safely unwrap the value.
+pub fn expected_read(maybe_c: Result<u8, std::io::Error>) -> u8 {
     maybe_c
-        .map_err(|_err| {
-            println!("ERROR - cannot read contents of {input_path}");
+        .map_err(|err| {
+            println!(
+                "ERROR - while reading byte at `{}` due to IO error - `{}`",
+                INPUT_PATH.as_str(),
+                err
+            );
             std::process::exit(3)
         })
         .unwrap()
