@@ -216,7 +216,7 @@ enum State {
     ConfirmKeywordReturn,
 }
 
-pub struct StateMachine {
+pub(crate) struct StateMachine {
     state: State,
     lexeme: String,
 }
