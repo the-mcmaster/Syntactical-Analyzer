@@ -1,3 +1,5 @@
+use crate::error_codes::LEXICAL_ERROR;
+
 /// The cream-of-the-crop (it always rises to the top) of this
 /// assignment: the Token enum. This token tags a lexeme for the
 /// syntactical analysis.
@@ -148,6 +150,7 @@ fn matches(control: char, test: u8) -> bool {
 /// - `int`
 /// - `float`
 /// - `return`
+/// 
 /// there are *n* unique states, with *n* being the number
 /// of characters in a keyword.
 ///
@@ -216,6 +219,21 @@ enum State {
     ConfirmKeywordReturn,
 }
 
+/// The core structure of the lexical analysis.
+/// This simply stores the current state,
+/// and a string buffer for the constructing lexeme.
+/// 
+/// The main method of this struct is the `tick` method,
+/// which takes in a byte as input, causing the state machine to
+/// advance, and then may return 0, 1, or 2 token-lexeme pairs, depending on the
+/// given input and the current state of the machine.
+/// 
+/// 0. 0 tokens implies either a whitespace character was passed in while
+/// ignoring whitespaces, or the character was purely concatenated into the
+/// internal lexeme buffer.
+/// 1. 1 token implies that a non-symbol byte was passed in, which also completed the lexeme.
+/// 2. 2 tokens implies that symbol byte was passed in (which completes immediately),
+/// which forces the current lexeme to also flush to preserve token-lexeme order.
 pub(crate) struct StateMachine {
     state: State,
     lexeme: String,
@@ -233,7 +251,7 @@ impl StateMachine {
     /// Report an error with a given error message, and exit the program.
     fn detonate(&self, err_msg: String) -> ! {
         eprintln!("ERROR - failed to parse lexemes: {err_msg}");
-        std::process::exit(1)
+        std::process::exit(LEXICAL_ERROR)
     }
 
     /* PUBLIC METHODS */
@@ -283,8 +301,9 @@ impl StateMachine {
     /// 2. The state machine was reset.
     ///
     /// Hense, the verbage of "flush" in each of the macros.
+    /// 
+    /// Each of the three macros are documented in source code.
     pub fn tick(&mut self, c: u8) -> Option<Vec<(Token, String)>> {
-        //
         use crate::lexer::Symbol as Sym;
         use CharClass::*;
         use Type as Ty;
@@ -323,7 +342,7 @@ impl StateMachine {
         /// and the information for the symbol token
         /// (the symbol type and the symbol lexeme),
         /// resets the state machine, and returns the tokenized lexemes.
-        macro_rules! flush_lexeme_and_symbol_as_token {
+        macro_rules! flush_lexeme_and_symbol_as_tokens {
             ($lexeme_token:expr, ($symbol:expr, $symbol_lexeme:expr)) => {{
                 let mut output = vec![($lexeme_token, self.lexeme.clone())];
                 output.push(({ $symbol }.into(), { $symbol_lexeme }.into()));
@@ -359,7 +378,7 @@ impl StateMachine {
                     Symbol(Sym::Period) => State::NumberFloat,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::LiteralInt, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::LiteralInt, (sym, c as char))
                     }
 
                     _ => self.detonate(format!(
@@ -379,7 +398,7 @@ impl StateMachine {
                     Digit => State::NumberDigit,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::LiteralFloat, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::LiteralFloat, (sym, c as char))
                     }
 
                     _ => self.detonate(format!(
@@ -399,7 +418,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::LiteralInt, (sym, c as char));
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char));
                     }
 
                     _ => self.detonate(format!(
@@ -420,7 +439,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -441,7 +460,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -460,7 +479,7 @@ impl StateMachine {
                 self.state = match CharClass::parse(c) {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
                     Unknown => self.detonate(format!(
                         "Unexpected character `0x{c:x}` after `{}`",
@@ -480,7 +499,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -501,7 +520,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -522,7 +541,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -543,7 +562,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -562,7 +581,7 @@ impl StateMachine {
                 self.state = match CharClass::parse(c) {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
                     Unknown => self.detonate(format!(
                         "Unexpected character `0x{c:x}` after `{}`",
@@ -584,7 +603,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -607,7 +626,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -630,7 +649,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -653,7 +672,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -674,7 +693,7 @@ impl StateMachine {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
 
                     Unknown => self.detonate(format!(
@@ -695,7 +714,7 @@ impl StateMachine {
                 self.state = match CharClass::parse(c) {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_token!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
                     }
                     Unknown => self.detonate(format!(
                         "Unexpected character `0x{c:x}` after `{}`",
