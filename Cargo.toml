@@ -1,0 +1,15 @@
+[package]
+name = "Q2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+Q1 = { path = "../Q1" }
+
+[lib]
+name = "q2_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "Q2"
+path = "src/main.rs"
