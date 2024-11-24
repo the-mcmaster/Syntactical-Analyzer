@@ -5,12 +5,9 @@ use crate::error_codes::LEXICAL_ERROR;
 /// syntactical analysis.
 #[derive(Clone, Copy, Debug)]
 pub enum Token {
-    LiteralInt,
-    LiteralFloat,
+    Literal(Literal),
     Identifier,
-    #[allow(dead_code)]
     Symbol(Symbol),
-    #[allow(dead_code)]
     Type(Type),
     Return,
 }
@@ -24,6 +21,11 @@ impl From<Type> for Token {
         Token::Type(ty)
     }
 }
+impl From<Literal> for Token {
+    fn from(value: Literal) -> Self {
+        Token::Literal(value)
+    }
+}
 
 /// All the singleton character parseable symbols.
 ///
@@ -33,7 +35,7 @@ impl From<Type> for Token {
 /// - Grouping Operators
 /// - Identifier Underscore
 /// - Comma/Period
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug)]
 pub enum Symbol {
     // Arithmetic Operators
     Plus,
@@ -62,7 +64,7 @@ pub enum Symbol {
 }
 
 /// A determinant for a grouping of a character.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy)]
 enum CharClass {
     /// [a-zA-Z]
     Letter,
@@ -124,6 +126,12 @@ impl From<Symbol> for CharClass {
 /// A type keyword.
 #[derive(Clone, Copy, Debug)]
 pub enum Type {
+    Int,
+    Float,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Literal {
     Int,
     Float,
 }
@@ -367,14 +375,14 @@ impl StateMachine {
                 };
             }
 
-            State::NumberDigit if is_whitespace(c) => flush_lexeme_as_token!(Token::LiteralInt),
+            State::NumberDigit if is_whitespace(c) => flush_lexeme_as_token!(Literal::Int.into()),
             State::NumberDigit => {
                 self.state = match CharClass::parse(c) {
                     Digit => State::NumberDigit,
                     Symbol(Sym::Period) => State::NumberFloat,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_tokens!(Token::LiteralInt, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Literal::Int.into(), (sym, c as char))
                     }
 
                     _ => self.detonate(format!(
@@ -384,13 +392,13 @@ impl StateMachine {
                 };
             }
 
-            State::NumberFloat if is_whitespace(c) => flush_lexeme_as_token!(Token::LiteralFloat),
+            State::NumberFloat if is_whitespace(c) => flush_lexeme_as_token!(Literal::Float.into()),
             State::NumberFloat => {
                 self.state = match CharClass::parse(c) {
-                    Digit => State::NumberDigit,
+                    Digit => State::NumberFloat,
 
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_tokens!(Token::LiteralFloat, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Literal::Float.into(), (sym, c as char))
                     }
 
                     _ => self.detonate(format!(
