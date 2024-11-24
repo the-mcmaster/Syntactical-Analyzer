@@ -23,7 +23,7 @@ mod error_codes {
 /// Opens the file, then builds the tokens/lexemes
 /// from a state machine byte-by-byte
 /// in 1 pass, in order.
-/// 
+///
 /// Returns the constructed token-lexeme pairs in order.
 pub fn get_lexemes() -> Vec<(Token, String)> {
     // Try to open the file

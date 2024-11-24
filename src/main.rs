@@ -1,8 +1,7 @@
 use q1_lib::get_lexemes;
 
-
 /// The main function.
-/// 
+///
 /// Look in crate `q1_lib` for the backend implementation.
 fn main() {
     // Get the tagged tokens, immutably storing it in lexemes.

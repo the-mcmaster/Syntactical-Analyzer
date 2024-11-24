@@ -61,7 +61,7 @@ pub enum Symbol {
     Period,
 }
 
-/// A determinant of a grouping of a character.
+/// A determinant for a grouping of a character.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum CharClass {
     /// [a-zA-Z]
@@ -150,7 +150,7 @@ fn matches(control: char, test: u8) -> bool {
 /// - `int`
 /// - `float`
 /// - `return`
-/// 
+///
 /// there are *n* unique states, with *n* being the number
 /// of characters in a keyword.
 ///
@@ -222,12 +222,12 @@ enum State {
 /// The core structure of the lexical analysis.
 /// This simply stores the current state,
 /// and a string buffer for the constructing lexeme.
-/// 
+///
 /// The main method of this struct is the `tick` method,
 /// which takes in a byte as input, causing the state machine to
 /// advance, and then may return 0, 1, or 2 token-lexeme pairs, depending on the
 /// given input and the current state of the machine.
-/// 
+///
 /// 0. 0 tokens implies either a whitespace character was passed in while
 /// ignoring whitespaces, or the character was purely concatenated into the
 /// internal lexeme buffer.
@@ -291,7 +291,7 @@ impl StateMachine {
     /// ## Special notes to the grader...
     ///
     /// This function defines 3 macros, meant to greatly reduce boilerplate code
-    /// of a repeating design pattern, written only for the scope of `tick`. This
+    /// of a repeating design pattern (~700 lines -> ~400 lines), written only for the scope of `tick`. This
     /// is intended to make the code more readable and maintainable.
     ///
     /// This is important to mention, because this function
@@ -301,7 +301,7 @@ impl StateMachine {
     /// 2. The state machine was reset.
     ///
     /// Hense, the verbage of "flush" in each of the macros.
-    /// 
+    ///
     /// Each of the three macros are documented in source code.
     pub fn tick(&mut self, c: u8) -> Option<Vec<(Token, String)>> {
         use crate::lexer::Symbol as Sym;
@@ -354,7 +354,7 @@ impl StateMachine {
         }
 
         match self.state {
-            State::ScrollToNext if is_whitespace(c) => None,
+            State::ScrollToNext if is_whitespace(c) => return None,
             State::ScrollToNext => {
                 self.state = match CharClass::parse(c) {
                     Letter if matches('i', c) => State::MaybeTypeInt2,
@@ -365,10 +365,6 @@ impl StateMachine {
                     Symbol(sym) => flush_symbol_as_token!(sym, c as char),
                     Unknown => self.detonate(format!("Unknown character `0x{c:x}`")),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::NumberDigit if is_whitespace(c) => flush_lexeme_as_token!(Token::LiteralInt),
@@ -386,10 +382,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::NumberFloat if is_whitespace(c) => flush_lexeme_as_token!(Token::LiteralFloat),
@@ -406,10 +398,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::Identifier if is_whitespace(c) => flush_lexeme_as_token!(Token::Identifier),
@@ -426,10 +414,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeTypeInt2 if is_whitespace(c) => flush_lexeme_as_token!(Token::Identifier),
@@ -447,10 +431,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeTypeInt3 if is_whitespace(c) => flush_lexeme_as_token!(Token::Identifier),
@@ -468,10 +448,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::ConfirmTypeInt if is_whitespace(c) => flush_lexeme_as_token!(Ty::Int.into()),
@@ -486,10 +462,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeTypeFloat2 if is_whitespace(c) => flush_lexeme_as_token!(Token::Identifier),
@@ -507,10 +479,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeTypeFloat3 if is_whitespace(c) => flush_lexeme_as_token!(Token::Identifier),
@@ -528,10 +496,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeTypeFloat4 if is_whitespace(c) => flush_lexeme_as_token!(Token::Identifier),
@@ -549,10 +513,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeTypeFloat5 if is_whitespace(c) => flush_lexeme_as_token!(Token::Identifier),
@@ -570,10 +530,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::ConfirmTypeFloat if is_whitespace(c) => flush_lexeme_as_token!(Ty::Float.into()),
@@ -588,10 +544,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeKeywordReturn2 if is_whitespace(c) => {
@@ -611,10 +563,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeKeywordReturn3 if is_whitespace(c) => {
@@ -634,10 +582,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeKeywordReturn4 if is_whitespace(c) => {
@@ -657,10 +601,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeKeywordReturn5 if is_whitespace(c) => {
@@ -680,10 +620,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::MaybeKeywordReturn6 if is_whitespace(c) => flush_lexeme_as_token!(Token::Return),
@@ -701,10 +637,6 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
 
             State::ConfirmKeywordReturn if is_whitespace(c) => {
@@ -721,11 +653,11 @@ impl StateMachine {
                         self.lexeme
                     )),
                 };
-
-                self.lexeme.push(c as char);
-
-                None
             }
         }
+
+        self.lexeme.push(c as char);
+
+        None
     }
 }

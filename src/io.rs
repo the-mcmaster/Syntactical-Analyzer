@@ -10,7 +10,7 @@ use crate::error_codes::{BYTE_READ_ERROR, CLI_PARSE_ERROR, OPEN_FILE_ERROR};
 /// The input path passed-in from the CLI arguments, which is always expected.
 ///
 /// This is purposely left private to compartmentalize the IO module.
-/// 
+///
 /// LazyLock ensures that the value is loaded in static run-time memory
 /// when first accessed, and ensures that the value is never mutated.
 static INPUT_PATH: LazyLock<String> = LazyLock::new(|| {
