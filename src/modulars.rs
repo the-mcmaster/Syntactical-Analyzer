@@ -1,4 +1,4 @@
-use std::{io::Write, marker::PhantomData, slice::Iter};
+use std::{io::Write, slice::Iter};
 
 use crate::{make_indent, Parse, ParseDisplay};
 
@@ -35,7 +35,7 @@ impl<E: Parse, D: Parse> Parse for Delimited<E, D> {
         let mut fork = buffer.fork();
 
         // test if the list is going to be empty
-        let mut e =match E::parse(&mut fork) {
+        let e =match E::parse(&mut fork) {
             Ok(e) => e,
             Err(_) => return Ok(items.into()),
         };

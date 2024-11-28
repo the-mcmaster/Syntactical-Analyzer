@@ -1,6 +1,3 @@
-use q1_lib::lexer::Token;
-use q1_lib::lexer::Symbol as Sym;
-
 use crate::make_indent;
 use crate::ParseDisplay;
 use crate::{modulars::{Delimited, Terminated}, terminals::*, Parse, ParseBuffer};
@@ -41,7 +38,7 @@ impl Parse for FunctionDefinition {
     }
 }
 impl ParseDisplay for FunctionDefinition {
-    fn display(&self, depth: usize, label: Option<String>) {
+    fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
         let label = "Function Parameter";
         let lexemes_label = self.lexeme_signature();
@@ -98,7 +95,7 @@ impl Parse for FunctionParameter {
     }
 }
 impl ParseDisplay for FunctionParameter {
-    fn display(&self, depth: usize, label: Option<String>) {
+    fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
         let label = "Function Parameter";
         let lexemes_label = self.lexeme_signature();
@@ -153,7 +150,7 @@ impl Parse for Statement {
     }
 }
 impl ParseDisplay for Statement {
-    fn display(&self, depth: usize, label: Option<String>) {
+    fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
         let label = "Statement";
         println!("{indent}{label}:");
@@ -198,7 +195,7 @@ impl Parse for AssignmentStatement {
     }
 }
 impl ParseDisplay for AssignmentStatement {
-    fn display(&self, depth: usize, label: Option<String>) {
+    fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
         let label = "Assignment Statement";
         let lexemes_label = self.lexeme_signature();
@@ -244,7 +241,7 @@ impl Parse for ReturnStatement {
     }
 }
 impl ParseDisplay for ReturnStatement {
-    fn display(&self, depth: usize, label: Option<String>) {
+    fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
         let label = "Return Statement";
         let lexemes_label = self.lexeme_signature();
@@ -299,7 +296,7 @@ impl Parse for Expression {
     }
 } 
 impl ParseDisplay for Expression {
-    fn display(&self, depth: usize, label: Option<String>) {
+    fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
         let label = "Expression";
         println!("{indent}{label}:");
@@ -346,7 +343,7 @@ impl Parse for TypecastExpression {
     }
 }
 impl ParseDisplay for TypecastExpression {
-    fn display(&self, depth: usize, label: Option<String>) {
+    fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
         let label = "Typecast Expression";
         let lexemes_label = self.lexeme_signature();
@@ -628,7 +625,7 @@ impl Parse<Option<Self>> for FactorExtend {
     }
 }
 impl ParseDisplay for FactorExtend {
-    fn display(&self, depth: usize, label: Option<String>) {
+    fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
 
         // Stay at the same depth for Term: We have already been here

@@ -1,5 +1,3 @@
-#![allow(warnings)]
-
 use std::{iter::Peekable, slice::Iter, sync::LazyLock};
 
 use q1_lib::lexer::Token;
