@@ -463,7 +463,7 @@ impl StateMachine {
                 self.state = match CharClass::parse(c) {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Ty::Int.into(), (sym, c as char))
                     }
                     Unknown => self.detonate(format!(
                         "Unexpected character `0x{c:x}` after `{}`",
@@ -545,7 +545,7 @@ impl StateMachine {
                 self.state = match CharClass::parse(c) {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Ty::Float.into(), (sym, c as char))
                     }
                     Unknown => self.detonate(format!(
                         "Unexpected character `0x{c:x}` after `{}`",
@@ -654,7 +654,7 @@ impl StateMachine {
                 self.state = match CharClass::parse(c) {
                     Letter | Symbol(Sym::Underscore) | Digit => State::Identifier,
                     Symbol(sym) => {
-                        flush_lexeme_and_symbol_as_tokens!(Token::Identifier, (sym, c as char))
+                        flush_lexeme_and_symbol_as_tokens!(Token::Return, (sym, c as char))
                     }
                     Unknown => self.detonate(format!(
                         "Unexpected character `0x{c:x}` after `{}`",
