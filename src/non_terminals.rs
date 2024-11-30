@@ -76,13 +76,13 @@ impl Parse for FunctionDefinition {
     }
 
     fn parse_label() -> String {
-        todo!()
+        format!("Function Definition")
     }
 }
 impl ParseDisplay for FunctionDefinition {
     fn display(&self, depth: usize, _label: Option<String>) {
         let indent = make_indent(depth);
-        let label = "Function Parameter";
+        let label = "Function Definition";
         let lexemes_label = self.lexeme_signature();
         println!("{indent}{label}: {lexemes_label}");
 
