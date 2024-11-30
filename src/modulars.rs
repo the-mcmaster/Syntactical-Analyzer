@@ -1,27 +1,86 @@
-use std::{io::Write, slice::Iter};
+//! # Modular Tokens (Lists/Statements)
+//! 
+//! This library stores the "modular" tokens.
+//! 
+//! This inludes `Delimited` and `Terminated`.
+//! 
+//! These types abstract-away a particular type
+//! of BNF implementation.
+//! 
+//! Specifically,
+//! 
+//! #### Delimited BNF
+//! ```text
+//! <A>  -> e<A'>
+//!       | ε
+//! <A'> -> de<A'>
+//!       | ε
+//! ```
+//! 
+//! #### Terminated BNF
+//! ```text
+//! <A>  -> ed<A>
+//!       | ε
+//! ```
+//! 
+//! Where `e` and `d` are each the `Expected` item in the list and the `Delimiter` of the list.
 
-use crate::{make_indent, Parse, ParseDisplay};
+use std::{
+    io::Write, // Used with the `writeln!` and `write!` macros. Similar to sprintf in c.
+    slice::Iter // The standard iterator type over slices.
+};
+
+use crate::{
+    make_indent,
+    Parse,
+    ParseDisplay
+};
 
 /// Parses expecting a list of items, which are each delimited by a delimiter.
 /// 
-/// This will not parse a hanging delimiter. For instance, delimiter will parse the function parameters of
+/// This struct completely encapsulates the implementation of the following BNF
+/// #### Delimited BNF
+/// ```text
+/// <A>  -> e<A'>
+///       | ε
+/// <A'> -> de<A'>
+///       | ε
+/// ```
 /// 
-/// `int hello(int x, float y)`
+/// #### Object Structure
+/// ```
+/// pub struct Delimited<Expected: Parse, Delimiter: Parse> {
+///     items: Vec<(Expected, Option<Delimiter>)>
+/// }
+/// ```
 /// 
-/// but fail at
-/// `int hello(int x, float y,)`
+/// ##### `items: Vec<(Expected, Option<Delimiter>)>`
+/// This will be a list of objects, which can be empty.
+/// 
+/// If it is non-empty, then only the very last tuple of the list will contain
+/// `None`, rather than `Some`. This implementation guarentees it.
 pub struct Delimited<Expected: Parse, Delimiter: Parse> {
     items: Vec<(Expected, Option<Delimiter>)>
 }
-impl<'delimited, E: Parse, D: Parse> IntoIterator for &'delimited Delimited<E, D> {
-    type Item = &'delimited (E, Option<D>);
-
-    type IntoIter = Iter<'delimited, (E, Option<D>)>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.items.iter()
+impl<E: Parse, D: Parse> Delimited<E, D> {
+    /// A getter to the delimited items.
+    pub fn items(&self) -> &Vec<(E, Option<D>)> {
+        &self.items
     }
 }
+impl<'d, E: Parse, D: Parse> IntoIterator for &'d Delimited<E, D> {
+    type Item = &'d (E, Option<D>);
+
+    type IntoIter = Iter<'d, (E, Option<D>)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items.iter() // get the iterator directly from the internal items
+    }
+}
+/// DO NOT USE THIS UNLESS YOU KNOW WHAT YOU ARE DOING!
+/// 
+/// To use this safely, you must guarentee that:
+/// - for all items in the list, only the last contains `None` as the tuple's second variant.
 impl<E: Parse, D: Parse> From<Vec<(E, Option<D>)>> for Delimited<E, D> {
     fn from(items: Vec<(E, Option<D>)>) -> Self {
         Delimited {
@@ -31,41 +90,48 @@ impl<E: Parse, D: Parse> From<Vec<(E, Option<D>)>> for Delimited<E, D> {
 }
 impl<E: Parse, D: Parse> Parse for Delimited<E, D> {
     fn parse(buffer: &mut crate::ParseBuffer) -> Result<Self, String> {
+        // INITIALIZATION
         let mut items = vec![];
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
 
-        // test if the list is going to be empty
-        let e =match E::parse(&mut fork) {
+        // ATTEMPT TO GET THE FIRST EXPECTED
+        //
+        // Empty list is a success or no delimiter is a success.
+        let e = match E::parse(&mut fork) {
             Ok(e) => e,
             Err(_) => return Ok(items.into()),
         };
-
         match D::parse(&mut fork) {
             Ok(d) => items.push((e, Some(d))),
             Err(_) => {
                 items.push((e, None));
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 return Ok(items.into());
             },
         }
 
         // test for any additional items
         loop {
+            // EXPECT THE EXPECTED
             let e = match E::parse(&mut fork) {
                 Ok(e) => e,
                 Err(err) => {
+                    // construct error message
                     let mut err_msg = Vec::new();
                     writeln!(&mut err_msg, "While parsing {}...", Self::parse_label()).unwrap();
                     write!(&mut err_msg, "    {err}").unwrap();
+
+                    // return error
                     return Err(String::from_utf8(err_msg).unwrap());
                 },
             };
 
+            // A successful delimiter implies another iteration...
             match D::parse(&mut fork) {
                 Ok(d) => items.push((e, Some(d))),
                 Err(_) => {
                     items.push((e, None));
-                    *buffer = fork;
+                    *buffer = fork; // parse was successful: setting the buffer to the fork
                     return Ok(items.into());
                 },
             }
@@ -78,9 +144,10 @@ impl<E: Parse, D: Parse> Parse for Delimited<E, D> {
 }
 impl<E, D> ParseDisplay for Delimited<E, D>
 where 
-    E: ParseDisplay + Parse,
-    D: ParseDisplay + Parse
+    E: Parse,
+    D: Parse
 {
+    /// Label is recommended...
     fn display(&self, depth: usize, label: Option<String>) {
         let indent = make_indent(depth);
         let label = label.unwrap_or(Self::parse_label());
@@ -94,44 +161,60 @@ where
 
     fn lexeme_signature(&self) -> String {
         let mut sigg = String::new();
+        
         let mut iter = self.items.iter().peekable();
+        
+        // if the list is empty, return the empty string
         if iter.peek().is_none() {
             return "".into();
         }
+        
+        // otherwise, list out all of the tokens, leveraging assumptions made about the structure of the items
         loop {
             let (e, maybe_d) = iter.next().unwrap();
             
             sigg.extend(e.lexeme_signature().chars());
             
             if let Some(d) = maybe_d {
-                assert!(iter.peek().is_some());
+                assert!(iter.peek().is_some()); // guarentees we must adhere to
                 sigg.extend(d.lexeme_signature().chars());
                 sigg.extend(" ".chars());
             } else {
-                assert!(iter.peek().is_none());
-                break;
+                assert!(iter.peek().is_none()); // guarentees we must adhere to
+                break; // No more items, exit out of loop
             }
         }
+
         sigg
     }
 }
 
-/// Parses expecting a list of items, which are each delimited by a delimiter.
+/// Parses expecting a list of items, each terminated by a delimiter.
 /// 
-/// This will ONLY parse a hanging delimiter. For instance, terminated will parse the statements such as of
+/// This struct completely encapsulates the implementation of the following BNF
+/// #### Terminated BNF
+/// ```text
+/// <A>  -> ed<A>
+///       | ε
+/// ```
 /// 
+/// #### Object Structure
 /// ```
-/// hello();
-/// hello();
+/// pub struct Terminated<Expected: Parse, Delimiter: Parse> {
+///     items: Vec<(Expected, Delimiter)>,
+/// }
 /// ```
 /// 
-/// but fail at
-/// ```
-/// hello();
-/// hello() // <-- MISSING `;` delimiter!
-/// ```
+/// ##### `items: Vec<(Expected, Delimiter)>`
+/// This will be a list of objects, which can be empty.
 pub struct Terminated<Expected: Parse, Delimiter: Parse> {
     items: Vec<(Expected, Delimiter)>,
+}
+impl<'t, E: Parse, D: Parse> Terminated<E, D> {
+    /// A getter for the terminating items
+    pub fn items(&self) -> &Vec<(E, D)> {
+        &self.items
+    }
 }
 impl<'t, E: Parse, D: Parse> IntoIterator for &'t Terminated<E, D> {
     type Item = &'t (E, D);
@@ -139,9 +222,10 @@ impl<'t, E: Parse, D: Parse> IntoIterator for &'t Terminated<E, D> {
     type IntoIter = Iter<'t, (E, D)>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.items.iter()
+        self.items.iter() // get the iterator directly from the internal items
     }
 }
+/// Would not recommend using, but fine nonetheless
 impl<E: Parse, D: Parse> From<Vec<(E, D)>> for Terminated<E, D> {
     fn from(items: Vec<(E, D)>) -> Self {
         Terminated {
@@ -151,15 +235,16 @@ impl<E: Parse, D: Parse> From<Vec<(E, D)>> for Terminated<E, D> {
 }
 impl<E: Parse, D: Parse> Parse for Terminated<E, D> {
     fn parse(buffer: &mut crate::ParseBuffer) -> Result<Self, String> {
+        // INITALIZATION
         let mut items = vec![];
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
 
-        // test if the list is going to be empty
+        // ATTEMPT TO GET THE FIRST EXPECTED AND DELIMITED
+        // Empty list (no first expected) is a success
         let e = match E::parse(&mut fork) {
             Ok(e) => e,
             Err(_) => return Ok(items.into()),
         };
-
         match D::parse(&mut fork) {
             Ok(d) => items.push((e, d)),
             Err(err) => {
@@ -170,21 +255,28 @@ impl<E: Parse, D: Parse> Parse for Terminated<E, D> {
             },
         }
 
-        // test for any additional items
+        // CONSUME UNTIL SATISFIED
         loop {
-            let e = if let Ok(e) = E::parse(&mut fork) {
-                e
-            } else {
-                *buffer = fork;
-                return Ok(items.into());
+            // ATTEMPT TO GET THE NEXT EXPECTED AND DELIMITED
+            // Return at first failed expected,
+            // but error at first failed delimiter
+            let e = match E::parse(&mut fork) {
+                Ok(e) => e,
+                Err(_) => return {
+                    *buffer = fork; // parse was successful: setting the buffer to the fork
+                    Ok(items.into())
+                },
             };
-    
             match D::parse(&mut fork) {
-                Ok(d) => items.push((e, d)),
+                Ok(d) => items.push((e, d)), // store, and parse again
+                
+                // a delimiter is non-optional: failure at first parse
                 Err(err) => {
+                    // create the error message
                     let mut err_msg = Vec::new();
                     writeln!(&mut err_msg, "While parsing {}...", Self::parse_label()).unwrap();
                     write!(&mut err_msg, "    {err}").unwrap();
+                    
                     return Err(String::from_utf8(err_msg).unwrap());
                 },
             }
@@ -197,15 +289,17 @@ impl<E: Parse, D: Parse> Parse for Terminated<E, D> {
 }
 impl<E, D> ParseDisplay for Terminated<E, D>
 where 
-    E: ParseDisplay + Parse,
-    D: ParseDisplay + Parse
+    E: Parse,
+    D: Parse
 {
+    /// A label is recommended...
     fn display(&self, depth: usize, label: Option<String>) {
         let indent = make_indent(depth);
         let label = label.unwrap_or(Self::parse_label());
         let lexemes_label = self.lexeme_signature();
         println!("{indent}{label}: {lexemes_label}");
 
+        // displays each expected item, ignoring the delimiter as redundant
         for (e, _d) in self {
             e.display(depth+1, None);
         }
@@ -213,10 +307,17 @@ where
 
     fn lexeme_signature(&self) -> String {
         let mut sigg = String::new();
-        for (e, d) in self {
+        
+        let mut iter = self.into_iter().peekable(); // a raw *peekable* iterator over the items
+        while let Some((e, d)) = iter.next() {
+            // always include the expected and delimited
             sigg.extend(e.lexeme_signature().chars());
             sigg.extend(d.lexeme_signature().chars());
-            sigg.extend(" ".chars());
+            
+            // only if there will be a next item, include a space
+            if iter.peek().is_some() {
+                sigg.extend(" ".chars());
+            }
         }
         sigg
     }

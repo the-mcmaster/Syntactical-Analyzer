@@ -1,15 +1,60 @@
-use crate::make_indent;
-use crate::ParseDisplay;
-use crate::{modulars::{Delimited, Terminated}, terminals::*, Parse, ParseBuffer};
+//! # Non-Terminal Tokens
+//! 
+//! This library all composite types: types built fundamentally off the terminals.
+//! 
+//! This library abstracts BNF by the difference in `struct` and `enum`.
+//! 
+//! If a non-terminal is a:
+//! - `struct`, then the BNF for that type has only one variant, which always starts with a terminal.
+//! - `enum`, then the BNF for that type has strictly more than one variant, each with at least one inner variant. See `Enum Cont.`
+//! to read all the ways that `Enum` is used to abstract BNF.
+//! 
+//! ### Enum Cont.
+//! 
+//! As mentioned previously, the BNF for that type has strictly more than one variant, each with at least one inner variant.
+//! 
+//! Each enum also follows another rule: **all first inner variants of the enum are of the same terminal-class**. That is to say,
+//! if any of the variants start with a terminal symbol, then all the variants of the same sum will also start with a terminal, and vice versa.
+//! 
+//! Another abstraction is optionality. If the enum (let's call it `T`) is only expected optionaly,
+//! then the `Parse` trait implementation signature will be
+//! ```
+//! impl Parse<Option<Self>> for T
+//! ```
+//! rather than its usual
+//! ```
+//! impl Parse for T
+//! ```
+//! 
+//! This is to avoid adding an `Empty` variant to each of these enums, and enfore
+//! its optionality in parent composite types.
 
+use crate::{
+    make_indent,
+    Parse,
+    ParseBuffer,
+    ParseDisplay,
+    terminals::*,
+    modulars::{
+        Delimited, 
+        Terminated
+    }
+};
+
+/// A Function Definition
+/// 
+/// # BNF
+/// ```text
+/// <FUNCTION DEFINITION> -> type identifier (<FUNCTION PARAMETERS>){<COMPOUND STATEMENTS>}
+/// ```
 pub struct FunctionDefinition {
     type_: Type,
     function_name: Identifier,
     left_paren: LeftParen,
-    parameters: Delimited<FunctionParameter, Comma>,
+    parameters: FunctionParameters,
     right_paren: RightParen,
     left_curly: LeftCurly,
-    compound_statements: Terminated<Statement, Semicolon>,
+    compound_statements: CompoundStatements,
     right_curly: RightCurly,
 }
 impl Parse for FunctionDefinition {
@@ -18,18 +63,18 @@ impl Parse for FunctionDefinition {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         let function_parameter = FunctionDefinition {
             type_: Type::parse(&mut fork)?,
             function_name: Identifier::parse(&mut fork)?,
             left_paren: LeftParen::parse(&mut fork)?,
-            parameters: Delimited::parse(&mut fork)?,
+            parameters: FunctionParameters::parse(&mut fork)?,
             right_paren: RightParen::parse(&mut fork)?,
             left_curly: LeftCurly::parse(&mut fork)?,
-            compound_statements: Terminated::parse(&mut fork)?,
+            compound_statements: CompoundStatements::parse(&mut fork)?,
             right_curly: RightCurly::parse(&mut fork)?
         };
-        *buffer = fork;
+        *buffer = fork; // parse was successful: setting the buffer to the fork
         return Ok(function_parameter);
     }
 
@@ -71,7 +116,33 @@ impl ParseDisplay for FunctionDefinition {
     }
 }
 
-struct FunctionParameter {
+/// A delimited list by Comma of Function Parameter
+/// 
+/// # BNF
+/// ```text
+/// <FUNCTION PARAMETERS> -> <FUNCTION PARAMETER><FUNCTION PARAMETERS'>
+///                        | ε
+/// <FUNCTION PARAMETERS'> -> ,<FUNCTION PARAMETER><FUNCTION PARAMETERS'>
+///                         | ε
+/// ```
+pub type FunctionParameters = Delimited<FunctionParameter, Comma>;
+
+/// A terminated list by Semicolon of Statement
+/// 
+/// # BNF
+/// ```text
+/// <COMPOUND STATEMENTS> -> <STATEMENT>;<COMPOUND STATEMENTS>
+///                        | ε
+/// ```
+pub type CompoundStatements = Terminated<Statement, Semicolon>;
+
+/// A Function Parameter
+/// 
+/// # BNF
+/// ```text
+/// <FUNCTION PARAMETER> -> type identifier
+/// ```
+pub struct FunctionParameter {
     type_ : Type,
     identifier: Identifier,
 }
@@ -81,12 +152,12 @@ impl Parse for FunctionParameter {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         let function_parameter = FunctionParameter {
             type_: Type::parse(&mut fork)?,
             identifier: Identifier::parse(&mut fork)?,
         };
-        *buffer = fork;
+        *buffer = fork; // parse was successful: setting the buffer to the fork
         return Ok(function_parameter);
     }
 
@@ -114,7 +185,14 @@ impl ParseDisplay for FunctionParameter {
     }
 }
 
-enum Statement {
+/// A Statement
+/// 
+/// # BNF
+/// ```text
+/// <STATEMENT> -> <ASSIGNMENT STATEMENT>
+///              | <RETURN STATEMENT>
+/// ```
+pub enum Statement {
     Assignment(AssignmentStatement),
     Return(ReturnStatement),
 }
@@ -124,19 +202,19 @@ impl Parse for Statement {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match AssignmentStatement::parse(&mut fork) {
             Ok(assignment_statement) => {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 return Ok(Statement::Assignment(assignment_statement));
             },
             Err(_) => (),
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match ReturnStatement::parse(&mut fork) {
             Ok(return_statement) => {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 return Ok(Statement::Return(return_statement));
             },
             Err(_) => (),
@@ -169,7 +247,13 @@ impl ParseDisplay for Statement {
     }
 }
 
-struct AssignmentStatement {
+/// An Assignment Statement
+/// 
+/// # BNF
+/// ```text
+/// <ASSIGNMENT STATEMENT> -> identifier = <EXPRESSION>
+/// ```
+pub struct AssignmentStatement {
     lhs_identifier: Identifier,
     equals: Equals,
     expression: Expression,
@@ -180,13 +264,13 @@ impl Parse for AssignmentStatement {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         let assignment_statement = AssignmentStatement {
             lhs_identifier: Identifier::parse(&mut fork)?,
             equals: Equals::parse(&mut fork)?,
             expression: Expression::parse(&mut fork)?,
         };
-        *buffer = fork;
+        *buffer = fork; // parse was successful: setting the buffer to the fork
         return Ok(assignment_statement);
     }
 
@@ -217,7 +301,13 @@ impl ParseDisplay for AssignmentStatement {
     }
 }
 
-struct ReturnStatement {
+/// A Return Statement
+/// 
+/// # BNF
+/// ```text
+/// return <EXPRESSION>
+/// ```
+pub struct ReturnStatement {
     return_ : Return,
     expression: Expression,
 }
@@ -227,12 +317,12 @@ impl Parse for ReturnStatement {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         let return_statement = ReturnStatement {
             return_: Return::parse(&mut fork)?,
             expression: Expression::parse(&mut fork)?,
         };
-        *buffer = fork;
+        *buffer = fork; // parse was successful: setting the buffer to the fork
         return Ok(return_statement);
     }
 
@@ -260,7 +350,14 @@ impl ParseDisplay for ReturnStatement {
     }
 }
 
-enum Expression {
+/// An Expression
+/// 
+/// # BNF
+/// ```text
+/// <EXPRESSION> -> <ARITHMETIC EXPRESSION>
+///               | <TYPECAST EXPRESSION>
+/// ```
+pub enum Expression {
     Arithmetic(ArithmeticExpression),
     Typecast(TypecastExpression),
 }
@@ -270,19 +367,19 @@ impl Parse for Expression {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match ArithmeticExpression::parse(&mut fork) {
             Ok(arithmetic_expression) => {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 return Ok(Expression::Arithmetic(arithmetic_expression));
             },
             Err(_) => (),
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match TypecastExpression::parse(&mut fork) {
             Ok(typecast_expression) => {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 return Ok(Expression::Typecast(typecast_expression));
             },
             Err(_) => (),
@@ -315,7 +412,13 @@ impl ParseDisplay for Expression {
     }
 }
 
-struct TypecastExpression {
+/// A Typecast Expression
+/// 
+/// # BNF
+/// ```text
+/// <TYPECAST EXPRESSION> -> (type)identifier
+/// ```
+pub struct TypecastExpression {
     left_paren: LeftParen,
     type_: Type,
     right_paren: RightParen,
@@ -327,14 +430,14 @@ impl Parse for TypecastExpression {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         let typecast_expression = TypecastExpression {
             left_paren: LeftParen::parse(&mut fork)?,
             type_: Type::parse(&mut fork)?,
             right_paren: RightParen::parse(&mut fork)?,
             ident: Identifier::parse(&mut fork)?
         };
-        *buffer = fork;
+        *buffer = fork; // parse was successful: setting the buffer to the fork
         return Ok(typecast_expression);
     }
 
@@ -365,6 +468,12 @@ impl ParseDisplay for TypecastExpression {
     }
 }
 
+/// An Arithmetic Expression
+/// 
+/// # BNF
+/// ```text
+/// <ARITHMETIC EXPRESSION> -> <TERM><TERM'>
+/// ```
 pub struct ArithmeticExpression {
     lhs_term: Term,
     extend: Option<TermExtend>
@@ -375,12 +484,12 @@ impl Parse for ArithmeticExpression {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         let arithmetic_expression = ArithmeticExpression {
             lhs_term: Term::parse(&mut fork)?,
             extend: TermExtend::parse(&mut fork)?
         };
-        *buffer = fork;
+        *buffer = fork; // parse was successful: setting the buffer to the fork
         return Ok(arithmetic_expression);
     }
 
@@ -411,7 +520,15 @@ impl ParseDisplay for ArithmeticExpression {
     }
 }
 
-struct Term {
+/// A Term
+/// 
+/// This is basically something maybe seperated by + or -.
+/// 
+/// # BNF
+/// ```text
+/// <TERM> -> <FACTOR><FACTOR'>
+/// ```
+pub struct Term {
     factor: Factor,
     extend: Option<FactorExtend>
 }
@@ -421,12 +538,12 @@ impl Parse for Term {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         let term = Term {
             factor: Factor::parse(&mut fork)?,
             extend: FactorExtend::parse(&mut fork)?,
         };
-        *buffer = fork;
+        *buffer = fork; // parse was successful: setting the buffer to the fork
         return Ok(term);
     }
 
@@ -458,7 +575,24 @@ impl ParseDisplay for Term {
     }
 }
 
-enum TermExtend {
+/// A Term's Extension
+/// 
+/// This changes a statement to a statement with an addition.
+/// 
+/// # BNF
+/// ```text
+/// <TERM'> -> +<TERM>
+///          | -<TERM>
+///          | ε
+/// ```
+/// 
+/// **Note:** the enum encapsulates the first two non-empty cases.
+/// The ε option is encapsulated as the `Option<Self>` in the `Parse` implementation
+/// signature
+/// ```
+/// impl Parse<Option<Self>> for TermExtend
+/// ```
+pub enum TermExtend {
     Add(Plus, Term),
     Subtract(Minus, Term),
 }
@@ -468,19 +602,19 @@ impl Parse<Option<Self>> for TermExtend {
             return Ok(None);
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match Plus::parse(&mut fork) {
             Ok(plus) => return Term::parse(&mut fork).map(|term| {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 Some(TermExtend::Add(plus, term))
             }),
             Err(_) => ()
         }
         
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match Minus::parse(&mut fork) {
             Ok(minus) => return Term::parse(&mut fork).map(|term| {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 Some(TermExtend::Subtract(minus, term))
             }),
             Err(_) => ()
@@ -529,7 +663,16 @@ impl ParseDisplay for TermExtend {
     }
 }
 
-enum Factor {
+/// A Factor
+/// 
+/// This is either a number or a literal.
+/// 
+/// # BNF
+/// ```text
+/// <FACTOR> -> identifier
+///           | literal
+/// ```
+pub enum Factor {
     Identifier(Identifier),
     Literal(Literal),
 }
@@ -539,19 +682,19 @@ impl Parse for Factor {
             Err(format!("Expected `{}`, but found nothing instead", Self::parse_label()))?
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match Identifier::parse(&mut fork) {
             Ok(identifier) => {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 return Ok(Factor::Identifier(identifier));
             },
             Err(_) => (),
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match Literal::parse(&mut fork) {
             Ok(literal) => {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 return Ok(Factor::Literal(literal));
             },
             Err(_) => (),
@@ -589,7 +732,24 @@ impl ParseDisplay for Factor {
     }
 }
 
-enum FactorExtend {
+/// A Factor's Extension
+/// 
+/// This changes a statement to a statement with a multiplication or division.
+/// 
+/// # BNF
+/// ```text
+/// <FACTOR'> -> *<FACTOR>
+///            | /<FACTOR>
+///            | ε
+/// ```
+/// 
+/// **Note:** the enum encapsulates the first two non-empty cases.
+/// The ε option is encapsulated as the `Option<Self>` in the `Parse` implementation
+/// signature
+/// ```
+/// impl Parse<Option<Self>> for FactorExtend
+/// ```
+pub enum FactorExtend {
     Multiply(Multiply, Factor),
     Divide(Divide, Factor),
 }
@@ -599,19 +759,19 @@ impl Parse<Option<Self>> for FactorExtend {
             return Ok(None);
         }
 
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match Multiply::parse(&mut fork) {
             Ok(multiply) => return Factor::parse(&mut fork).map(|factor| {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 Some(FactorExtend::Multiply(multiply, factor))
             }),
             Err(_) => ()
         }
         
-        let mut fork = buffer.fork();
+        let mut fork = buffer.fork(); // this is to make parse attempts without modifying the original buffer
         match Divide::parse(&mut fork) {
             Ok(divide) => return Factor::parse(&mut fork).map(|factor| {
-                *buffer = fork;
+                *buffer = fork; // parse was successful: setting the buffer to the fork
                 Some(FactorExtend::Divide(divide, factor))
             }),
             Err(_) => ()
