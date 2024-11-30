@@ -109,8 +109,8 @@ The binary part code is simply `main.rs`, and is very small as it simply "gets" 
 # Expected Output
 When ran on with the provided code, it should return
 ```
-[eric@elinux Q1]$ cargo run -- -i ../targets/test.txt
-   Compiling Q1 v0.1.0 (/home/eric/Desktop/ProgrammingAssignment2/main/Q1)
+[hostname@user Q1]$ cargo run -- -i ../targets/test.txt
+   Compiling Q1 v0.1.0 (/path/to/ProgrammingAssignment2/main/Q1)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.22s
      Running `target/debug/Q1 -i ../targets/test.txt`
 TOKEN                   |LEXEME
