@@ -91,106 +91,91 @@ macro_rules! impl_terminal_parse {
 }
 
 pub struct Identifier {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Identifier, Token::Identifier => Token::Identifier, "{identifier}");
 
 pub struct Type {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Type, Token::Type(type_token) => Token::Type(*type_token), "{type}");
 
 pub struct Equals {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Equals, Token::Symbol(Sym::Equal) => Token::Symbol(Sym::Equal), "=");
 
 pub struct Semicolon {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Semicolon, Token::Symbol(Sym::Semicolon) => Token::Symbol(Sym::Semicolon), ";");
 
 pub struct Return {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Return, Token::Return => Token::Return, "return");
 
 pub struct Literal {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Literal, Token::Literal(literal) => Token::Literal(*literal), "{literal}");
 
 pub struct LeftParen {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(LeftParen, Token::Symbol(Sym::LeftParen) => Token::Symbol(Sym::LeftParen), "(");
 
 pub struct RightParen {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(RightParen, Token::Symbol(Sym::RightParen) => Token::Symbol(Sym::RightParen), ")");
 
 pub struct Plus {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Plus, Token::Symbol(Sym::Plus) => Token::Symbol(Sym::Plus), "+");
 
 pub struct Minus {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Minus, Token::Symbol(Sym::Minus) => Token::Symbol(Sym::Minus), "-");
 
 pub struct Multiply {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Multiply, Token::Symbol(Sym::Multiply) => Token::Symbol(Sym::Multiply), "*");
 
 pub struct Divide {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String,
+    pub token: Token,
+    pub lexeme: &'static String,
 }
 impl_terminal_parse!(Divide, Token::Symbol(Sym::Divide) => Token::Symbol(Sym::Divide), "/");
 
 pub struct Comma {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String
+    pub token: Token,
+    pub lexeme: &'static String
 }
 impl_terminal_parse!(Comma, Token::Symbol(Sym::Comma) => Token::Symbol(Sym::Comma), ",");
 
 pub struct LeftCurly {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String
+    pub token: Token,
+    pub lexeme: &'static String
 }
 impl_terminal_parse!(LeftCurly, Token::Symbol(Sym::LeftCurly) => Token::Symbol(Sym::LeftCurly), "{");
 
 pub struct RightCurly {
-    #[allow(unused)]
-    token: Token,
-    lexeme: &'static String
+    pub token: Token,
+    pub lexeme: &'static String
 }
 impl_terminal_parse!(RightCurly, Token::Symbol(Sym::RightCurly) => Token::Symbol(Sym::RightCurly), "}");

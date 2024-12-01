@@ -45,14 +45,14 @@ use crate::{
 /// <FUNCTION DEFINITION> -> type identifier (<FUNCTION PARAMETERS>){<COMPOUND STATEMENTS>}
 /// ```
 pub struct FunctionDefinition {
-    type_: Type,
-    function_name: Identifier,
-    left_paren: LeftParen,
-    parameters: FunctionParameters,
-    right_paren: RightParen,
-    left_curly: LeftCurly,
-    compound_statements: CompoundStatements,
-    right_curly: RightCurly,
+    pub type_: Type,
+    pub function_name: Identifier,
+    pub left_paren: LeftParen,
+    pub parameters: FunctionParameters,
+    pub right_paren: RightParen,
+    pub left_curly: LeftCurly,
+    pub compound_statements: CompoundStatements,
+    pub right_curly: RightCurly,
 }
 impl Parse for FunctionDefinition {
     fn parse(buffer: &mut ParseBuffer) -> Result<Self, String> {
@@ -140,8 +140,8 @@ pub type CompoundStatements = Terminated<Statement, Semicolon>;
 /// <FUNCTION PARAMETER> -> type identifier
 /// ```
 pub struct FunctionParameter {
-    type_ : Type,
-    identifier: Identifier,
+    pub type_ : Type,
+    pub identifier: Identifier,
 }
 impl Parse for FunctionParameter {
     fn parse(buffer: &mut ParseBuffer) -> Result<Self, String> {
@@ -251,9 +251,9 @@ impl ParseDisplay for Statement {
 /// <ASSIGNMENT STATEMENT> -> identifier = <EXPRESSION>
 /// ```
 pub struct AssignmentStatement {
-    lhs_identifier: Identifier,
-    equals: Equals,
-    expression: Expression,
+    pub lhs_identifier: Identifier,
+    pub equals: Equals,
+    pub expression: Expression,
 }
 impl Parse for AssignmentStatement {
     fn parse(buffer: &mut ParseBuffer) -> Result<Self, String> {
@@ -305,8 +305,8 @@ impl ParseDisplay for AssignmentStatement {
 /// return <EXPRESSION>
 /// ```
 pub struct ReturnStatement {
-    return_ : Return,
-    expression: Expression,
+    pub return_ : Return,
+    pub expression: Expression,
 }
 impl Parse for ReturnStatement {
     fn parse(buffer: &mut ParseBuffer) -> Result<Self, String> {
@@ -416,10 +416,10 @@ impl ParseDisplay for Expression {
 /// <TYPECAST EXPRESSION> -> (type)identifier
 /// ```
 pub struct TypecastExpression {
-    left_paren: LeftParen,
-    type_: Type,
-    right_paren: RightParen,
-    ident: Identifier,
+    pub left_paren: LeftParen,
+    pub type_: Type,
+    pub right_paren: RightParen,
+    pub ident: Identifier,
 }
 impl Parse for TypecastExpression {
     fn parse(buffer: &mut ParseBuffer) -> Result<Self, String> {
@@ -472,8 +472,8 @@ impl ParseDisplay for TypecastExpression {
 /// <ARITHMETIC EXPRESSION> -> <TERM><TERM'>
 /// ```
 pub struct ArithmeticExpression {
-    lhs_term: Term,
-    extend: Option<TermExtend>
+    pub lhs_term: Term,
+    pub extend: Option<TermExtend>
 }
 impl Parse for ArithmeticExpression {
     fn parse(buffer: &mut ParseBuffer) -> Result<Self, String> {
@@ -526,8 +526,8 @@ impl ParseDisplay for ArithmeticExpression {
 /// <TERM> -> <FACTOR><FACTOR'>
 /// ```
 pub struct Term {
-    factor: Factor,
-    extend: Option<FactorExtend>
+    pub factor: Factor,
+    pub extend: Option<FactorExtend>
 }
 impl Parse for Term {
     fn parse(buffer: &mut ParseBuffer) -> Result<Self, String> {
