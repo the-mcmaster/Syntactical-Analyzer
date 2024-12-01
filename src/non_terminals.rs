@@ -43,7 +43,8 @@ use crate::{
 /// # BNF
 /// ```text
 /// <FUNCTION DEFINITION> -> type identifier (<FUNCTION PARAMETERS>){<COMPOUND STATEMENTS>}
-/// ```
+/// ``` 
+#[derive(Clone)] // We cannot derive `Copy` due to modulars, but we can clone
 pub struct FunctionDefinition {
     pub type_: Type,
     pub function_name: Identifier,
@@ -139,6 +140,7 @@ pub type CompoundStatements = Terminated<Statement, Semicolon>;
 /// ```text
 /// <FUNCTION PARAMETER> -> type identifier
 /// ```
+#[derive(Clone, Copy)]
 pub struct FunctionParameter {
     pub type_ : Type,
     pub identifier: Identifier,
@@ -189,6 +191,7 @@ impl ParseDisplay for FunctionParameter {
 /// <STATEMENT> -> <ASSIGNMENT STATEMENT>
 ///              | <RETURN STATEMENT>
 /// ```
+#[derive(Clone, Copy)]
 pub enum Statement {
     Assignment(AssignmentStatement),
     Return(ReturnStatement),
@@ -250,6 +253,7 @@ impl ParseDisplay for Statement {
 /// ```text
 /// <ASSIGNMENT STATEMENT> -> identifier = <EXPRESSION>
 /// ```
+#[derive(Clone, Copy)]
 pub struct AssignmentStatement {
     pub lhs_identifier: Identifier,
     pub equals: Equals,
@@ -304,6 +308,7 @@ impl ParseDisplay for AssignmentStatement {
 /// ```text
 /// return <EXPRESSION>
 /// ```
+#[derive(Clone, Copy)]
 pub struct ReturnStatement {
     pub return_ : Return,
     pub expression: Expression,
@@ -354,6 +359,7 @@ impl ParseDisplay for ReturnStatement {
 /// <EXPRESSION> -> <ARITHMETIC EXPRESSION>
 ///               | <TYPECAST EXPRESSION>
 /// ```
+#[derive(Clone, Copy)]
 pub enum Expression {
     Arithmetic(ArithmeticExpression),
     Typecast(TypecastExpression),
@@ -415,6 +421,7 @@ impl ParseDisplay for Expression {
 /// ```text
 /// <TYPECAST EXPRESSION> -> (type)identifier
 /// ```
+#[derive(Clone, Copy)]
 pub struct TypecastExpression {
     pub left_paren: LeftParen,
     pub type_: Type,
@@ -471,6 +478,7 @@ impl ParseDisplay for TypecastExpression {
 /// ```text
 /// <ARITHMETIC EXPRESSION> -> <TERM><TERM'>
 /// ```
+#[derive(Clone, Copy)]
 pub struct ArithmeticExpression {
     pub lhs_term: Term,
     pub extend: Option<TermExtend>
@@ -525,6 +533,7 @@ impl ParseDisplay for ArithmeticExpression {
 /// ```text
 /// <TERM> -> <FACTOR><FACTOR'>
 /// ```
+#[derive(Clone, Copy)]
 pub struct Term {
     pub factor: Factor,
     pub extend: Option<FactorExtend>
@@ -589,6 +598,7 @@ impl ParseDisplay for Term {
 /// ```
 /// impl Parse<Option<Self>> for TermExtend
 /// ```
+#[derive(Clone, Copy)]
 pub enum TermExtend {
     Add(Plus, Term),
     Subtract(Minus, Term),
@@ -669,6 +679,7 @@ impl ParseDisplay for TermExtend {
 /// <FACTOR> -> identifier
 ///           | literal
 /// ```
+#[derive(Clone, Copy)]
 pub enum Factor {
     Identifier(Identifier),
     Literal(Literal),
@@ -746,6 +757,7 @@ impl ParseDisplay for Factor {
 /// ```
 /// impl Parse<Option<Self>> for FactorExtend
 /// ```
+#[derive(Clone, Copy)]
 pub enum FactorExtend {
     Multiply(Multiply, Factor),
     Divide(Divide, Factor),

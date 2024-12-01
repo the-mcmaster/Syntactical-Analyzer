@@ -90,90 +90,105 @@ macro_rules! impl_terminal_parse {
     };
 }
 
+#[derive(Clone, Copy)]
 pub struct Identifier {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Identifier, Token::Identifier => Token::Identifier, "{identifier}");
 
+#[derive(Clone, Copy)]
 pub struct Type {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Type, Token::Type(type_token) => Token::Type(*type_token), "{type}");
 
+#[derive(Clone, Copy)]
 pub struct Equals {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Equals, Token::Symbol(Sym::Equal) => Token::Symbol(Sym::Equal), "=");
 
+#[derive(Clone, Copy)]
 pub struct Semicolon {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Semicolon, Token::Symbol(Sym::Semicolon) => Token::Symbol(Sym::Semicolon), ";");
 
+#[derive(Clone, Copy)]
 pub struct Return {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Return, Token::Return => Token::Return, "return");
 
+#[derive(Clone, Copy)]
 pub struct Literal {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Literal, Token::Literal(literal) => Token::Literal(*literal), "{literal}");
 
+#[derive(Clone, Copy)]
 pub struct LeftParen {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(LeftParen, Token::Symbol(Sym::LeftParen) => Token::Symbol(Sym::LeftParen), "(");
 
+#[derive(Clone, Copy)]
 pub struct RightParen {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(RightParen, Token::Symbol(Sym::RightParen) => Token::Symbol(Sym::RightParen), ")");
 
+#[derive(Clone, Copy)]
 pub struct Plus {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Plus, Token::Symbol(Sym::Plus) => Token::Symbol(Sym::Plus), "+");
 
+#[derive(Clone, Copy)]
 pub struct Minus {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Minus, Token::Symbol(Sym::Minus) => Token::Symbol(Sym::Minus), "-");
 
+#[derive(Clone, Copy)]
 pub struct Multiply {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Multiply, Token::Symbol(Sym::Multiply) => Token::Symbol(Sym::Multiply), "*");
 
+#[derive(Clone, Copy)]
 pub struct Divide {
     pub token: Token,
     pub lexeme: &'static String,
 }
 impl_terminal_parse!(Divide, Token::Symbol(Sym::Divide) => Token::Symbol(Sym::Divide), "/");
 
+#[derive(Clone, Copy)]
 pub struct Comma {
     pub token: Token,
     pub lexeme: &'static String
 }
 impl_terminal_parse!(Comma, Token::Symbol(Sym::Comma) => Token::Symbol(Sym::Comma), ",");
 
+#[derive(Clone, Copy)]
 pub struct LeftCurly {
     pub token: Token,
     pub lexeme: &'static String
 }
 impl_terminal_parse!(LeftCurly, Token::Symbol(Sym::LeftCurly) => Token::Symbol(Sym::LeftCurly), "{");
 
+#[derive(Clone, Copy)]
 pub struct RightCurly {
     pub token: Token,
     pub lexeme: &'static String

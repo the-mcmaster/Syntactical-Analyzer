@@ -59,6 +59,7 @@ use crate::{
 /// 
 /// If it is non-empty, then only the very last tuple of the list will contain
 /// `None`, rather than `Some`. This implementation guarentees it.
+#[derive(Clone)]
 pub struct Delimited<Expected: Parse, Delimiter: Parse> {
     items: Vec<(Expected, Option<Delimiter>)>
 }
@@ -207,6 +208,7 @@ where
 /// 
 /// ##### `items: Vec<(Expected, Delimiter)>`
 /// This will be a list of objects, which can be empty.
+#[derive(Clone)]
 pub struct Terminated<Expected: Parse, Delimiter: Parse> {
     items: Vec<(Expected, Delimiter)>,
 }
