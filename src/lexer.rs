@@ -1,8 +1,8 @@
 use crate::error_codes::LEXICAL_ERROR;
 
 /// The cream-of-the-crop (it always rises to the top) of this
-/// assignment: the Token enum. This token tags a lexeme for the
-/// syntactical analysis.
+/// assignment: the Token enum.
+/// This token "tags" a lexeme for the syntactical analysis as `(Token, String)`
 #[derive(Clone, Copy, Debug)]
 pub enum Token {
     Literal(Literal),
@@ -64,6 +64,13 @@ pub enum Symbol {
 }
 
 /// A determinant for a grouping of a character.
+/// 
+/// The four categories are
+/// 
+/// - `Letter` (all alphabetical ascii [a-zA-Z])
+/// - `Digit` (all digital ascii [0-9])
+/// - `Symbol` (all expected symbols [+-*/=;(){}_,.])
+/// - `Unknown` (any other character, almost always means to invoke an error)
 #[derive(Clone, Copy)]
 enum CharClass {
     /// [a-zA-Z]
@@ -126,13 +133,23 @@ impl From<Symbol> for CharClass {
 /// A type keyword.
 #[derive(Clone, Copy, Debug)]
 pub enum Type {
+    /// the `int` type
     Int,
+    /// the `float` type
     Float,
 }
 
+/// A literal value
 #[derive(Clone, Copy, Debug)]
 pub enum Literal {
+    /// An `int` literal
+    /// 
+    /// This is anything that is just a solid stream of digits.
     Int,
+    
+    /// A `float literal`
+    /// 
+    /// A solid stream of digits, with a period somewhere inbetween.
     Float,
 }
 

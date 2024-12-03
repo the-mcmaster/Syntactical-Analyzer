@@ -1,3 +1,8 @@
+//! # q1_lib
+//! 
+//! This library is split between IO (CLI argument parsing, file handling), and 
+//! the lexical analysis (the lexical State Machine, token types).
+
 use crate::io::{expected_read, open_file};
 use crate::lexer::{StateMachine, Token};
 

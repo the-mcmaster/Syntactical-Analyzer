@@ -14,32 +14,20 @@ use crate::error_codes::{BYTE_READ_ERROR, CLI_PARSE_ERROR, OPEN_FILE_ERROR};
 /// LazyLock ensures that the value is loaded in static run-time memory
 /// when first accessed, and ensures that the value is never mutated.
 static INPUT_PATH: LazyLock<String> = LazyLock::new(|| {
-    // read program's argument, expecting only '-i' anywhere
-    let found_argument = args()
-        .enumerate()
-        .find(|(_index, c)| c == "-i")
-        .map(|(index, _c)| index);
+    // read program's arguments, skipping the trivial first argument, and expecting some "first" argument
+    let found_file_path = args()
+        .skip(1)
+        .next();
 
     // exit if the flag is not found.
-    if found_argument.is_none() {
-        eprintln!("ERROR - provide argument `-i` to input a file");
+    if found_file_path.is_none() {
+        eprintln!("ERROR - expected at least one argument");
+        eprintln!("          - first argument is expected to be an input path");
         std::process::exit(CLI_PARSE_ERROR)
     }
 
-    // the next argument is the input path
-    let input_arg_index = found_argument.unwrap() + 1;
-
-    // get the argument just after `-i` and expect it to be a file path
-    let found_path = args().skip(input_arg_index).next();
-
-    if found_path.is_none() {
-        eprintln!("ERROR - please provide input file after argument `-i`");
-        std::process::exit(CLI_PARSE_ERROR)
-    }
-
-    let input_file_path = found_path.unwrap();
-
-    return input_file_path;
+    // the argument is the input path
+    return found_file_path.unwrap();
 });
 
 /// Returns an interator over the bytes of a file.
