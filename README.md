@@ -74,7 +74,7 @@ When ran on with the provided code, it should return
 [hostname@user Q1]$ cargo run -- ../targets/test.txt
    Compiling Q1 v0.1.0 (/path/to/ProgrammingAssignment2/main/Q1)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.22s
-     Running `target/debug/Q1 -i ../targets/test.txt`
+     Running `target/debug/Q1 ../targets/test.txt`
 TOKEN                   |LEXEME
 ________________________|________________________
 Type(Int)               |int
