@@ -115,8 +115,8 @@ If failure, it prints out an error message and exits.
 When ran on with the provided code, it should return
 ```text
 [hostname@user Q2]$ cargo run -- ../targets/test.txt
-   Compiling Q1 v0.1.0 (/path/to/ProgrammingAssignment2/main/Q1)
-   Compiling Q2 v0.1.0 (/path/to/ProgrammingAssignment2/main/Q2)
+   Compiling Q1 v0.1.0 (/path/to/ProgrammingAssignment2/PA2/Q1)
+   Compiling Q2 v0.1.0 (/path/to/ProgrammingAssignment2/PA2/Q2)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
      Running `target/debug/Q2 ../targets/test.txt`
 Function Definition: int foo (float x, int y) {....}
