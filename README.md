@@ -14,6 +14,14 @@ This is the codebase for question 1. It features a state machine that reads the 
 4. `Also, note that the lexical analyzer should read one character at a time.`
    - See `open_file` in `src/io.rs`
 
+#### Assumptions
+1. All literals are categorized as an integer first, then promoted to a float.
+2. There can be any whitespace after any valid token.
+3. Symbol tokens are always 1 character long.
+4. `int`, `float`, and `return` are reserved and cannot be an identifier.
+5. Whitespace and symbols will always terminate a token.
+6. Whitespace can be included between any two tokens.
+
 # Dependencies
 This relies only on the standard library.
 
