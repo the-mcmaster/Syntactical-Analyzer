@@ -1,5 +1,10 @@
 # BNF
-Below is the BNF this library implements. Note that "identifier" represents the lexical token`Token::Identifier`, and will treated like a terminal. Similarly with the "literal" "type" labels.
+
+Below is the BNF this library implements.
+
+Note that "identifier" represents the lexical token`Token::Identifier`, and will treated like a terminal.
+Similarly with the "literal" "type" labels.
+
 ```text
 <FUNCTION DEFINITION> -> type identifier (<FUNCTION PARAMETERS>){<COMPOUND STATEMENTS>}
 
