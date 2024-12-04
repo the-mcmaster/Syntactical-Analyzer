@@ -14,6 +14,9 @@ This is the codebase for question 1. It features a state machine that reads the 
 4. `Also, note that the lexical analyzer should read one character at a time.`
    - See `open_file` in `src/io.rs`
 
+# Dependencies
+This relies only on the standard library.
+
 # Crate Organization
 
 ### High Level Overview
