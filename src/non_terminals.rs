@@ -306,7 +306,7 @@ impl ParseDisplay for AssignmentStatement {
 /// 
 /// # BNF
 /// ```text
-/// return <EXPRESSION>
+/// <RETURN STATEMENT> -> return <EXPRESSION>
 /// ```
 #[derive(Clone, Copy)]
 pub struct ReturnStatement {
