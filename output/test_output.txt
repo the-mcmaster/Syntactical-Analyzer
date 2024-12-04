@@ -1,0 +1,58 @@
+Function Definition: int foo (float x, int y) {....}
+    Funtion Return Type: int
+    Function Identifier: foo
+    Left Paren: (
+    Function Parameters: float x, int y
+        Function Parameter: float x
+            Parameter Type: float
+            Parameter Identifier: x
+        Function Parameter: int y
+            Parameter Type: int
+            Parameter Identifier: y
+    Right Paren: )
+    Left Curly: {
+    Compound Statements: y = x + 10; x = y / 2.0; y = (int)x; return x;
+        Statement:
+            Assignment Statement: y = x + 10
+                Identifier: y
+                Equals: =
+                Expression:
+                    Arithmetic Expression: x + 10
+                        Term: x
+                            Factor: x
+                                Variable: x
+                        Operator: +
+                        Term: 10
+                            Factor: 10
+                                Literal: 10
+        Statement:
+            Assignment Statement: x = y / 2.0
+                Identifier: x
+                Equals: =
+                Expression:
+                    Arithmetic Expression: y / 2.0
+                        Term: y / 2.0
+                            Factor: y
+                                Variable: y
+                            Operator: /
+                            Factor: 2.0
+                                Literal: 2.0
+        Statement:
+            Assignment Statement: y = (int)x
+                Identifier: y
+                Equals: =
+                Expression:
+                    Typecast Expression: (int)x
+                        Left Paren: (
+                        Cast Type: int
+                        Right Paren: )
+                        Cast Indentifier: x
+        Statement:
+            Return Statement: return x
+                Return: return
+                Expression:
+                    Arithmetic Expression: x
+                        Term: x
+                            Factor: x
+                                Variable: x
+    Right Curly: }

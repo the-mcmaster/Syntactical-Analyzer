@@ -30,22 +30,23 @@ a left recursive-descent parsing strategy.
 - `You may assume that the right-hand side expression of an assignment statement will have...and 10 + 30 should also be legal.`
    - See `modulars.rs`, `non_terminals.rs`, and `terminals.rs` in `src/`
 
-- `State all your assumptions explicitly.`
-   - There can be zero or more function parameters for the function definition.
-   - Function parameters are seperated by commas, and are strinctly *delimited* (not terminated) by it.
-   - There can be zero or more statements within the compound statements.
-   - Statements in a compound statement must always be terminated by a semicolon, no matter the statement type.
-   - All assignment statements start with an identifier. No type information can be given.
-   - Arithmetic expressions can be either a
-      - singular identifier or literal
-      - identifier(s) and literals(s) delimited by +, -, *, and/or /
-   - Arithmetic expressions can have 0, 1, 2, or 3 operators. However, not all operator combinations are possible. Below are all possible valid parses (_ is a placeholder for literal/identifier).
-      - _ (\*/) _ (+-) _ (\*/) _
-      - _ (\*/) _ (+-) _
-      - _ (+-) _ (\*/) _
-      - _ (+-\*/) _
-   - Arithmetic expressions has (\*/) lower than (+-) in the parse tree to enforce operator precendence.
-   - Typecast expressions expect only an identifier for the casted value.
+`State all your assumptions explicitly.`
+#### Assumptions
+1. There can be zero or more function parameters for the function definition.
+2. Function parameters are seperated by commas, and are strinctly *delimited* (not terminated) by it.
+3. There can be zero or more statements within the compound statements.
+4. Statements in a compound statement must always be terminated by a semicolon, no matter the statement type.
+5. All assignment statements start with an identifier. No type information can be given.
+6. Arithmetic expressions can be either a
+    - singular identifier or literal
+    - identifier(s) and literals(s) delimited by +, -, *, and/or /
+7. Arithmetic expressions can have 0, 1, 2, or 3 operators. However, not all operator combinations are possible. Below are all possible valid parses (_ is a placeholder for literal/identifier).
+    - _ (\*/) _ (+-) _ (\*/) _
+    - _ (\*/) _ (+-) _
+    - _ (+-) _ (\*/) _
+    - _ (+-\*/) _
+8. Arithmetic expressions has (\*/) lower than (+-) in the parse tree to enforce operator precendence. (Enforces the MDAS of PEMDAS.)
+9. Typecast expressions expect only an identifier for the casted value.
 
 ### Task 4.3
 For the implementation for how the output is generated to `stdout`, see `ParseDisplay` in `src/lib.rs` and the corresponding implementations.

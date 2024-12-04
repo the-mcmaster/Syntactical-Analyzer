@@ -1,0 +1,51 @@
+Function Definition: int foo () {....}
+    Funtion Return Type: int
+    Function Identifier: foo
+    Left Paren: (
+    Function Parameters: 
+    Right Paren: )
+    Left Curly: {
+    Compound Statements: y = 10 * x; x = y / 2.0; y = (int)x; return x;
+        Statement:
+            Assignment Statement: y = 10 * x
+                Identifier: y
+                Equals: =
+                Expression:
+                    Arithmetic Expression: 10 * x
+                        Term: 10 * x
+                            Factor: 10
+                                Literal: 10
+                            Operator: *
+                            Factor: x
+                                Variable: x
+        Statement:
+            Assignment Statement: x = y / 2.0
+                Identifier: x
+                Equals: =
+                Expression:
+                    Arithmetic Expression: y / 2.0
+                        Term: y / 2.0
+                            Factor: y
+                                Variable: y
+                            Operator: /
+                            Factor: 2.0
+                                Literal: 2.0
+        Statement:
+            Assignment Statement: y = (int)x
+                Identifier: y
+                Equals: =
+                Expression:
+                    Typecast Expression: (int)x
+                        Left Paren: (
+                        Cast Type: int
+                        Right Paren: )
+                        Cast Indentifier: x
+        Statement:
+            Return Statement: return x
+                Return: return
+                Expression:
+                    Arithmetic Expression: x
+                        Term: x
+                            Factor: x
+                                Variable: x
+    Right Curly: }
