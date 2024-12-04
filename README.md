@@ -1,59 +1,56 @@
 **Author:** Eric Ovenden
 
-# Question 1: Lexical Analysis
+# Question 2: Syntax Analysis
 
-This is the codebase for question 1. It features a state machine that reads the bytes of a file onbe-by-one, and spits out token-lexeme pairs as it goes along.
+This is the codebase for question 2. It features an encapsulation parse tree design pattern, with
+a left recursive-descent parsing strategy.
 
-The library (`q1_lib`) is reused as a dependency in Q2.
+### Task 4.1
 
-# Executing
+1. `Construct a parse tree for the provided function using a recursive descent parser.`
+   - See `Parse` in `src/lib.rs`
+2. `This tree should visually represent the syntactic structure of the code as dictated by the grammar of the language.`
+   - See `modulars.rs`, `non_terminals.rs`, and `terminals.rs` in `src/`
+3. `Please provide separately the BNF/EBNF grammar that you use in your code.`
+   - See `BNF.md` in this crate's root
+   - BNF snippets also included for each parsing type in the library documentation.
 
-To execute the binary, simply run
-`cargo run -- -i [path/to/c_like/file]`
+### Task 4.2
+1. `Develop a C-like grammar in BNF/EBNF for the provided code snippet. (20 pts)`
+   - See `BNF.md` in this crate's root
+2.
+- `Develop a recursive descent parser and a parse tree starting from the function definition down to the terminals lexemes.`
+   - See `main` in `src/main.rs`
+   - See `Parse` in `src/lib.rs`
 
-This will
-1. compile the source code, and execute it
-    - (`cargo run`)
-2. and pass in the arguments `-i [path/]` to the binary
-    - (`-- -i [path/]`)
+- `Print the parse tree the way it is printed in the book for the recursive descent parser example provided in the book.`
+   - See `main` in `src/main.rs`
+   - See `ParseDisplay` in `src/lib.rs`
 
-# Documentation
+- `You may assume that the right-hand side expression of an assignment statement will have...and 10 + 30 should also be legal.`
+   - See `modulars.rs`, `non_terminals.rs`, and `terminals.rs` in `src/`
 
-Two options are available to read the documentation.
+- `State all your assumptions explicitly.`
+   - There can be zero or more function parameters for the function definition.
+   - Function parameters are seperated by commas, and are strinctly *delimited* (not terminated) by it.
+   - There can be zero or more statements within the compound statements.
+   - Statements in a compound statement must always be terminated by a semicolon, no matter the statement type.
+   - All assignment statements start with an identifier. No type information can be given.
+   - Arithmetic expressions can be either a
+      - singular identifier or literal
+      - identifier(s) and literals(s) delimited by +, -, *, and/or /
+   - Arithmetic expressions can have 0, 1, 2, or 3 operators. However, not all operator combinations are possible. Below are all possible valid parses (_ is a placeholder for literal/identifier).
+      - _ (\*/) _ (+-) _ (\*/) _
+      - _ (\*/) _ (+-) _
+      - _ (+-) _ (\*/) _
+      - _ (+-\*/) _
+   - Arithmetic expressions has (\*/) lower than (+-) in the parse tree to enforce operator precendence.
 
-### Well-Formatted HTML (recommended)
-To view an well-formated HTML formatted website for quick navigation of the source code, in the crate's root, run 
+### Task 4.3
+For the implementation for how the output is generated to `stdout`, see `ParseDisplay` in `src/lib.rs` and the corresponding implementations.
 
-`cargo doc --document-private-items --open`
-
-This will
-1. compile the documentation into a well-formatted HTML page,
-    - (`cargo doc`)
-
-2. including all `private`/`pub(crate)` items
-    - (`--document-private-items`),
-
-3. and then try to open it in a web browser.
-    - (`--open`)
-
-#### If for some reason it cannot open to a web browser automatically...
-
-... simply truncate the `--open` flag:
-
-`cargo doc --document-private-items`
-
-Using this command instead, you will see output to stderr that look like this:
-```
- Documenting Q2 v0.1.0 (path/to/crate)
-    Checking Q2 v0.1.0 (path/to/crate)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.41s
-   Generated path/to/crate/target/doc/q2_lib/index.html and 1 other file
-```
-
-Using your browser of choice, you can then open the html file at `[/path/to/crate/]target/doc/Q2/index.html`.
-
-### Raw Documentation Comments (not recommended)
-All documentation is written in the source code with comment lines starting in `/// This is a documentation line`. Documentation comments can be read in markdown style (*that's how `cargo doc` knows how to format the HTML*).
+# Dependencies
+1. `q1_lib` from the previous question (`Q1`)
 
 # Crate Organization
 
@@ -114,12 +111,12 @@ If failure, it prints out an error message and exits.
 
 # Expected Output
 When ran on with the provided code, it should return
-```
-[hostname@user Q2]$ cargo run -- -i ../targets/test.txt
+```text
+[hostname@user Q2]$ cargo run -- ../targets/test.txt
    Compiling Q1 v0.1.0 (/path/to/ProgrammingAssignment2/main/Q1)
    Compiling Q2 v0.1.0 (/path/to/ProgrammingAssignment2/main/Q2)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
-     Running `target/debug/Q2 -i ../targets/test.txt`
+     Running `target/debug/Q2 ../targets/test.txt`
 Function Definition: int foo (float x, int y) {....}
     Funtion Return Type: int
     Function Identifier: foo
