@@ -45,6 +45,7 @@ a left recursive-descent parsing strategy.
       - _ (+-) _ (\*/) _
       - _ (+-\*/) _
    - Arithmetic expressions has (\*/) lower than (+-) in the parse tree to enforce operator precendence.
+   - Typecast expressions expect only an identifier for the casted value.
 
 ### Task 4.3
 For the implementation for how the output is generated to `stdout`, see `ParseDisplay` in `src/lib.rs` and the corresponding implementations.
