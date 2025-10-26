@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-Q1 = { path = "../Q1" }
+Q1 = { path = "../lexical_analyzer" }
 
 [lib]
 name = "q2_lib"

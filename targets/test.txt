@@ -1,0 +1,6 @@
+int foo ( float x , int y ) {
+    y = x + 10;
+    x = y / 2.0;
+    y = ( int ) x ;
+    return x ;
+}
